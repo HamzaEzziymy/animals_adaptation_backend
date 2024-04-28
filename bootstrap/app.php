@@ -19,8 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            // 'stripe/*',
+            '*',
+            'http://192.168.56.1:3000/*',
+            // 'http://example.com/foo/*',
+        ]);
 
-        //
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
