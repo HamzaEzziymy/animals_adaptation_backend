@@ -41,11 +41,52 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // Attempt to authenticate with the provided credentials.
+        if (!Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
+            ]);
+        }
+
+        // Retrieve the authenticated user.
+        $user = Auth::user();
+
+        // Check if the authenticated user is an admin.
+        if ($user->isAdmin != 1) {
+            Auth::logout(); // Log out the user if they are not an admin.
+
+            throw ValidationException::withMessages([
+                'email' => __('These credentials do not match our records.'), // Make sure to add this custom message in your language files.
+            ]);
+        }
+
+        RateLimiter::clear($this->throttleKey());
+    }
+
+    public function authenticate1(): void
+    {
+        $this->ensureIsNotRateLimited();
+
+        // Attempt to authenticate with the provided credentials.
+        if (!Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => __('auth.failed'),
+            ]);
+        }
+
+        // Retrieve the authenticated user.
+        $user = Auth::user();
+
+        // Check if the authenticated user is an admin.
+        if ($user->isAdmin == 1) {
+            Auth::logout(); // Log out the user if they are not an admin.
+
+            throw ValidationException::withMessages([
+                'email' => __('These credentials do not match our records.'), // Make sure to add this custom message in your language files.
             ]);
         }
 
